@@ -433,6 +433,8 @@ class Player final : public Creature, public Cylinder
 		}
 
 		Item* getInventoryItem(slots_t slot) const;
+		Item* getInventoryItem(uint32_t slot) const;
+		bool isInventorySlot(slots_t slot) const;
 
 		bool isItemAbilityEnabled(slots_t slot) const {
 			return inventoryAbilities[slot];
@@ -525,6 +527,13 @@ class Player final : public Creature, public Cylinder
 		bool closeShopWindow(bool sendCloseShopWindow = true);
 		bool updateSaleShopList(const Item* item);
 		bool hasShopItemForSale(uint32_t itemId, uint8_t subType) const;
+		
+		bool isImbued() const {
+			return imbued;
+		}
+		void setImbued(bool imbuementStatus) {
+			imbued = imbuementStatus;
+		}
 
 		void setChaseMode(bool mode);
 		void setFightMode(fightMode_t mode) {
@@ -1020,6 +1029,8 @@ class Player final : public Creature, public Cylinder
 		bool hasLearnedInstantSpell(const std::string& spellName) const;
 
 		void updateRegeneration();
+		void addItemImbuements(Item* item);
+		void removeItemImbuements(Item* item);
 		bool inPvPArenaPlayer() {
 			return isPvPArenaPlayer;
 		}
@@ -1183,6 +1194,7 @@ class Player final : public Creature, public Cylinder
 		bool isConnecting = false;
 		bool addAttackSkillPoint = false;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
+		bool imbued = false;
 		bool isPvPArenaPlayer = false;
 
 		static uint32_t playerAutoID;

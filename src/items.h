@@ -172,6 +172,7 @@ enum ItemParseAttributes_t {
 	ITEM_PARSE_ALLOWDISTREAD,
 	ITEM_PARSE_STOREITEM,
 	ITEM_PARSE_WORTH,
+	ITEM_PARSE_IMBUEMENT_SLOT,
 };
 
 struct Abilities {

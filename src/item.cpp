@@ -27,6 +27,7 @@
 #include "house.h"
 #include "game.h"
 #include "bed.h"
+#include "scheduler.h"
 
 #include "actions.h"
 #include "spells.h"
@@ -540,6 +541,16 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			setIntAttr(ITEM_ATTRIBUTE_ATTACK_SPEED, attackSpeed);
 			break;
 		}
+		
+		case ATTR_IMBUESLOTS: {
+			uint32_t slots;
+			if (!propStream.read<uint32_t>(slots)) {
+				return ATTR_READ_ERROR;
+			}
+
+			addImbuementSlots(slots);
+			break;
+		}
 
 		case ATTR_DEFENSE: {
 			int32_t defense;
@@ -598,6 +609,23 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			}
 
 			setIntAttr(ITEM_ATTRIBUTE_DECAYTO, decayTo);
+			break;
+		}
+		
+		case ATTR_IMBUEMENTS: {
+			uint16_t size;
+			if (!propStream.read<uint16_t>(size)) {
+				return ATTR_READ_ERROR;
+			}
+
+			for (uint16_t i = 0; i < size; ++i) {
+				Imbuement* imb = new Imbuement();
+				if (!imb->unserialize(propStream)) {
+					return ATTR_READ_ERROR;
+				}
+
+				addImbuement(std::move(imb));
+			}
 			break;
 		}
 
@@ -785,6 +813,11 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 		propWriteStream.write<uint8_t>(ATTR_ATTACK_SPEED);
 		propWriteStream.write<uint32_t>(getIntAttr(ITEM_ATTRIBUTE_ATTACK_SPEED));
 	}
+	
+	if (getImbuementSlots() > 0) {
+		propWriteStream.write<uint8_t>(ATTR_IMBUESLOTS);
+		propWriteStream.write<uint32_t>(imbuementSlots);
+	}
 
 	if (hasAttribute(ITEM_ATTRIBUTE_DEFENSE)) {
 		propWriteStream.write<uint8_t>(ATTR_DEFENSE);
@@ -826,6 +859,14 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 
 			// Serializing value type and value
 			entry.second.serialize(propWriteStream);
+		}
+	}
+	
+	if (hasImbuements()) {
+		propWriteStream.write<uint8_t>(ATTR_IMBUEMENTS);
+		propWriteStream.write<uint16_t>(imbuements.size());
+		for (auto entry : imbuements) {
+			entry->serialize(propWriteStream);
 		}
 	}
 }
@@ -1800,4 +1841,151 @@ const bool& ItemAttributes::CustomAttribute::get<bool>() {
 	}
 
 	return emptyBool;
+}
+
+uint16_t Item::getImbuementSlots() const
+{
+	// item:getImbuementSlots() -- returns how many total slots
+	return imbuementSlots;
+}
+
+uint16_t Item::getFreeImbuementSlots() const
+{
+	// item:getFreeImbuementSLots() -- returns how many slots are available for use
+	return (imbuementSlots - (static_cast<uint16_t>(imbuements.size())));
+}
+
+bool Item::canImbue() const
+{
+	// item:canImbue() -- returns true if item has slots that are free
+	return (imbuementSlots > 0 && imbuementSlots > imbuements.size()) ? true : false;
+}
+
+bool Item::addImbuementSlots(const uint16_t amount)
+{
+	// item:addImbuementSlots(amount) -- tries to add imbuement slot, returns true if successful
+	constexpr uint16_t limit = std::numeric_limits<uint16_t>::max(); // uint16_t size limit
+	const uint16_t currentSlots = static_cast<uint16_t>(imbuements.size());
+
+	if ((currentSlots + amount) >= limit)
+	{
+		std::cout << "Warning in call to Item:addImbuementSlots(). Total added would be more than supported memory limit!" << std::endl;
+		return false;
+	}
+
+	imbuementSlots += amount;
+	return true;
+}
+
+bool Item::removeImbuementSlots(const uint16_t amount, const bool destroyImbues)
+{
+	// item:removeImbuementSlots(amount, destroy) -- tries to remove imbuement slot(s), returns true if successful
+	constexpr uint16_t limit = std::numeric_limits<uint16_t>::max(); // uint16_t size limit
+	const uint16_t currentSlots = static_cast<uint16_t>(imbuements.size());
+
+	if (currentSlots <= 0)
+	{
+		std::cout << "Warning in call to Item:removeImbuementSlots(). Item has no slots to remove!" << std::endl;
+		return false;
+	}
+
+	if ((amount + currentSlots) > limit)
+	{
+		std::cout << "Warning in call to Item:removeImbuementSlots(). Amount is bigger than supported memory limit!" << std::endl;
+		return false;
+	}
+
+	const uint16_t freeSlots = getFreeImbuementSlots();
+	const uint16_t difference = amount - currentSlots;
+
+	if (difference >= imbuementSlots || difference >= limit)
+	{
+		std::cout << "Warning in call to Item:removeImbuementSlots(). You are trying to remove too many slots!" << std::endl;
+		return false;
+	}
+
+	if (destroyImbues)
+	{
+		if (difference < currentSlots)
+		{
+			imbuements.erase(imbuements.begin(), imbuements.begin() + amount);
+		}
+	}
+	else {
+		if (freeSlots < currentSlots) {
+			return false;
+		}
+	}
+
+	imbuementSlots -= amount;
+	return true;
+}
+
+bool Item::hasImbuementType(const ImbuementType imbuetype) const
+{
+	// item:hasImbuementType(type)
+	return std::any_of(imbuements.begin(), imbuements.end(), [imbuetype](Imbuement* elem) {
+		return elem->imbuetype == imbuetype;
+		});
+}
+
+bool Item::hasImbuement(Imbuement* imbuement) const
+{
+	// item:hasImbuement(imbuement)
+	return std::any_of(imbuements.begin(), imbuements.end(), [&imbuement](Imbuement* elem) {
+		return elem == imbuement;
+		});
+}
+
+
+bool Item::hasImbuements() const
+{
+	// item:hasImbuements() -- returns true if item has any imbuements
+	return imbuements.size() > 0;
+}
+
+bool Item::addImbuement(Imbuement* imbuement)
+{
+	// item:addImbuement(imbuement) -- returns true if it successfully adds the imbuement
+	if (canImbue() && getFreeImbuementSlots() > 0)
+	{
+		imbuements.push_back(std::move(imbuement));
+		return true;
+	}
+	return false;
+}
+
+bool Item::removeImbuement(Imbuement* imbuement)
+{
+    // item:removeImbuement(imbuement) -- returns true if it found and removed the imbuement
+    auto it = std::remove_if(imbuements.begin(), imbuements.end(), [imbuement](auto elem) {
+        return elem == imbuement;
+    });
+    bool erased = (it != imbuements.end());
+    imbuements.erase(it, imbuements.end());
+    // this method should be used when removing slots probably.
+    return erased;
+}
+
+std::vector<Imbuement*> Item::getImbuements(){
+	return imbuements;
+}
+
+void Item::decayImbuements(bool infight) {
+	for (auto imbue : imbuements) {
+		if (imbue->isEquipDecay()) {
+			imbue->duration -= 1;
+			if (imbue->duration <= 0) {
+				removeImbuement(imbue);
+				return;
+			}
+		}
+		if (imbue->isInfightDecay() && infight) {
+			imbue->duration -= 1;
+			if (imbue->duration <= 0) {
+				removeImbuement(imbue);
+				return;
+			}
+		}
+	}
 }

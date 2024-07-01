@@ -802,11 +802,7 @@ ReturnValue MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* ite
             player->setVarSpecialSkill(static_cast<SpecialSkills_t>(i), it.abilities->specialSkills[i]);
         }
     }
-
-	if (needUpdateSkills) {
-		player->sendSkills();
-	}
-
+	
 	//stat modifiers
 	bool needUpdateStats = false;
 
@@ -820,6 +816,11 @@ ReturnValue MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* ite
 			needUpdateStats = true;
 			player->setVarStats(static_cast<stats_t>(s), static_cast<int32_t>(player->getDefaultStats(static_cast<stats_t>(s)) * ((it.abilities->statsPercent[s] - 100) / 100.f)));
 		}
+	}
+	
+	if (needUpdateSkills) {
+		std::cout << "Skills updated!" << std::endl;
+		player->sendSkills();
 	}
 
 	if (needUpdateStats) {
@@ -885,10 +886,6 @@ ReturnValue MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots
         }
     }
 
-	if (needUpdateSkills) {
-		player->sendSkills();
-	}
-
 	//stat modifiers
 	bool needUpdateStats = false;
 
@@ -902,6 +899,11 @@ ReturnValue MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots
 			needUpdateStats = true;
 			player->setVarStats(static_cast<stats_t>(s), -static_cast<int32_t>(player->getDefaultStats(static_cast<stats_t>(s)) * ((it.abilities->statsPercent[s] - 100) / 100.f)));
 		}
+	}
+	
+	if (needUpdateSkills) {
+		std::cout << "Skills updated!" << std::endl;
+		player->sendSkills();
 	}
 
 	if (needUpdateStats) {
