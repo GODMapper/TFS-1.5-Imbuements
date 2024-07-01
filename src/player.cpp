@@ -4632,10 +4632,10 @@ void Player::updateRegeneration()
 	}
 }
 
-void Player::addItemImbuements(Item * item) {
+void Player::addItemImbuements(Item* item) {
 	if (item->hasImbuements()) {
-		const std::vector<std::shared_ptr<Imbuement>> imbuementList = item->getImbuements();
-		for (auto imbue : imbuementList) {
+		const std::vector<std::shared_ptr<Imbuement>>& imbuementList = item->getImbuements();
+		for (auto& imbue : imbuementList) {
 			if (imbue->isSkill()) {
 				switch (imbue->imbuetype) {
 					case ImbuementType::IMBUEMENT_TYPE_FIST_SKILL:
@@ -4700,8 +4700,8 @@ void Player::addItemImbuements(Item * item) {
 
 void Player::removeItemImbuements(Item* item) {
 	if (item->hasImbuements()) {
-		const std::vector<std::shared_ptr<Imbuement>> imbuementList = item->getImbuements();
-		for (auto imbue : imbuementList) {
+		const std::vector<std::shared_ptr<Imbuement>>& imbuementList = item->getImbuements();
+		for (auto& imbue : imbuementList) {
 			if (imbue->isSkill()) {
 				switch (imbue->imbuetype) {
 					case ImbuementType::IMBUEMENT_TYPE_FIST_SKILL:
