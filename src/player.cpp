@@ -4634,7 +4634,7 @@ void Player::updateRegeneration()
 
 void Player::addItemImbuements(Item * item) {
 	if (item->hasImbuements()) {
-		const std::vector<Imbuement*> imbuementList = item->getImbuements();
+		const std::vector<std::shared_ptr<Imbuement>> imbuementList = item->getImbuements();
 		for (auto imbue : imbuementList) {
 			if (imbue->isSkill()) {
 				switch (imbue->imbuetype) {
@@ -4700,7 +4700,7 @@ void Player::addItemImbuements(Item * item) {
 
 void Player::removeItemImbuements(Item* item) {
 	if (item->hasImbuements()) {
-		const std::vector<Imbuement*> imbuementList = item->getImbuements();
+		const std::vector<std::shared_ptr<Imbuement>> imbuementList = item->getImbuements();
 		for (auto imbue : imbuementList) {
 			if (imbue->isSkill()) {
 				switch (imbue->imbuetype) {

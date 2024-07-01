@@ -619,12 +619,12 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			}
 
 			for (uint16_t i = 0; i < size; ++i) {
-				Imbuement* imb = new Imbuement();
+				std::shared_ptr<Imbuement> imb = std::make_shared<Imbuement>();
 				if (!imb->unserialize(propStream)) {
 					return ATTR_READ_ERROR;
 				}
 
-				addImbuement(std::move(imb));
+				addImbuement(imb);
 			}
 			break;
 		}
@@ -1924,15 +1924,15 @@ bool Item::removeImbuementSlots(const uint16_t amount, const bool destroyImbues)
 bool Item::hasImbuementType(const ImbuementType imbuetype) const
 {
 	// item:hasImbuementType(type)
-	return std::any_of(imbuements.begin(), imbuements.end(), [imbuetype](Imbuement* elem) {
+	return std::any_of(imbuements.begin(), imbuements.end(), [imbuetype](std::shared_ptr<Imbuement> elem) {
 		return elem->imbuetype == imbuetype;
 		});
 }
 
-bool Item::hasImbuement(Imbuement* imbuement) const
+bool Item::hasImbuement(std::shared_ptr<Imbuement> imbuement) const
 {
 	// item:hasImbuement(imbuement)
-	return std::any_of(imbuements.begin(), imbuements.end(), [&imbuement](Imbuement* elem) {
+	return std::any_of(imbuements.begin(), imbuements.end(), [&imbuement](std::shared_ptr<Imbuement> elem) {
 		return elem == imbuement;
 		});
 }
@@ -1944,18 +1944,18 @@ bool Item::hasImbuements() const
 	return imbuements.size() > 0;
 }
 
-bool Item::addImbuement(Imbuement* imbuement)
+bool Item::addImbuement(std::shared_ptr<Imbuement>  imbuement)
 {
 	// item:addImbuement(imbuement) -- returns true if it successfully adds the imbuement
 	if (canImbue() && getFreeImbuementSlots() > 0)
 	{
-		imbuements.push_back(std::move(imbuement));
+		imbuements.push_back(imbuement);
 		return true;
 	}
 	return false;
 }
 
-bool Item::removeImbuement(Imbuement* imbuement)
+bool Item::removeImbuement(std::shared_ptr<Imbuement> imbuement)
 {
     // item:removeImbuement(imbuement) -- returns true if it found and removed the imbuement
     auto it = std::remove_if(imbuements.begin(), imbuements.end(), [imbuement](auto elem) {
@@ -1967,7 +1967,7 @@ bool Item::removeImbuement(Imbuement* imbuement)
     return erased;
 }
 
-std::vector<Imbuement*> Item::getImbuements(){
+std::vector<std::shared_ptr<Imbuement>> Item::getImbuements(){
 	return imbuements;
 }
 
