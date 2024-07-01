@@ -165,6 +165,10 @@ Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
 			setCharges(it.charges);
 		}
 	}
+	
+	if (it.imbuementslots != 0) {
+		addImbuementSlots(it.imbuementslots);
+	}
 
 	setDefaultDuration();
 }
@@ -550,7 +554,7 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 				return ATTR_READ_ERROR;
 			}
 
-			addImbuementSlots(slots);
+			imbuementSlots = slots;
 			break;
 		}
 
@@ -1912,8 +1916,7 @@ bool Item::removeImbuementSlots(const uint16_t amount, const bool destroyImbues)
 		{
 			imbuements.erase(imbuements.begin(), imbuements.begin() + amount);
 		}
-	}
-	else {
+	} else {
 		if (freeSlots < currentSlots) {
 			return false;
 		}
