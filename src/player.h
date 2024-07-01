@@ -1034,6 +1034,7 @@ class Player final : public Creature, public Cylinder
 		void updateRegeneration();
 		void addItemImbuements(Item* item);
 		void removeItemImbuements(Item* item);
+		void addImbuementEffect(std::shared_ptr<Imbuement> imbue);
 		void removeImbuementEffect(std::shared_ptr<Imbuement> imbue);
 		bool inPvPArenaPlayer() {
 			return isPvPArenaPlayer;
