@@ -1,7 +1,6 @@
 -- Configuration settings for the imbuing process
 local config = {
-    shrineId = 24184,              -- ID of the shrine
-    shrineAId = 35531,             -- ActionID of the shrine
+    shrineId = 7496,              -- ID of the shrine
     removeCost = 15000,            -- Cost to remove an imbuement
     basicImbueCost = 15000,        -- Cost for basic imbuement
     intricateImbueCost = 55000,    -- Cost for intricate imbuement
@@ -262,9 +261,6 @@ local useItem = Action()
 
 -- Defines the action to be taken when an item is used
 function useItem.onUse(player, item, fromPosition, target, toPosition, isHotkey)
-    if item.actionid ~= config.shrineAId then
-        return false
-    end
     if isItemInList(target:getName()) then
         resetActiveImbueItem(player)
         local topLevelPlayer = Player(target:getTopParent())

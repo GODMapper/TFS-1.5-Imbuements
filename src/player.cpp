@@ -1283,6 +1283,18 @@ void Player::onCreatureMove(Creature* creature, const Tile* newTile, const Posit
 			g_game.internalCloseTrade(this);
 		}
 	}
+	
+	// close modal windows
+	if (!modalWindows.empty()) {
+		// TODO: This shouldn't be hard-coded
+		for (uint32_t modalWindowId : modalWindows) {
+			if (modalWindowId == std::numeric_limits<uint32_t>::max()) {
+				sendTextMessage(MESSAGE_EVENT_ADVANCE, "Offline training aborted.");
+				break;
+			}
+		}
+		modalWindows.clear();
+	}
 
 	if (party) {
 		party->updateSharedExperience();
@@ -4450,6 +4462,7 @@ bool Player::addOfflineTrainingTries(skills_t skill, uint64_t tries)
 	sendTextMessage(MESSAGE_EVENT_ADVANCE, fmt::format("Your {:s} skill changed from level {:d} (with {:.2f}% progress towards level {:d}) to level {:d} (with {:.2f}% progress towards level {:d})", ucwords(getSkillName(skill)), oldSkillValue, oldPercentToNextLevel, (oldSkillValue + 1), newSkillValue, newPercentToNextLevel, (newSkillValue + 1)));
 	return sendUpdate;
 }
+*/
 
 bool Player::hasModalWindowOpen(uint32_t modalWindowId) const
 {
@@ -4475,7 +4488,6 @@ void Player::clearModalWindows()
 {
 	modalWindows.clear();
 }
-*/
 
 uint16_t Player::getHelpers() const
 {

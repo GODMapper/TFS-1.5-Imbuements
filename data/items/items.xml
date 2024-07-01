@@ -15723,6 +15723,7 @@
 		<attribute key="weight" value="900" />
 		<attribute key="armor" value="3" />
 		<attribute key="slotType" value="head" />
+		<attribute key="imbuementslots" value="2" />
 	</item>
 	<item id="8821" article="a" name="witchhunter's coat">
 		<attribute key="weight" value="2500" />
